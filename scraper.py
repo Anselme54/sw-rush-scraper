@@ -49,12 +49,27 @@ def main():
             all_notices.extend(notices)
 
             # Vérifier s’il y a une page suivante
-            next_btn = page.query_selector("div#paging_div a.btn_next:not(.no_hover)")
-            if next_btn and "onclick" in next_btn.get_attribute("outerHTML"):
-                next_btn.click()
-                time.sleep(1)  # attendre que la page charge
-            else:
-                break
+          # --- Pagination robuste ---
+while True:
+    # Traiter les éléments de la page ici
+    # ...
+
+    # Vérifier si le bouton "suivant" existe
+    try:
+        next_btn = page.wait_for_selector("a.btn_next", timeout=2000)  # attend max 2 sec
+    except:
+        next_btn = None
+
+    if next_btn:
+        outer_html = next_btn.get_attribute("outerHTML")
+        if outer_html and "onclick" in outer_html:
+            next_btn.click()
+            page.wait_for_load_state("networkidle")  # attendre le chargement complet
+        else:
+            break  # plus de pages
+    else:
+        break  # bouton introuvable, fin de la pagination
+
 
         # Affichage
         for notice in all_notices:
